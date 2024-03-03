@@ -184,6 +184,22 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- My custom configs
+
+-- exit insert mode
+vim.keymap.set('i', 'jk', '<ESC>', { desc = 'Exit insert mode with jk' })
+
+-- Save files with 'leader w'
+vim.api.nvim_set_keymap('n', '<Leader>w', ':w!<CR>', { noremap = true, silent = true })
+
+-- close window with 'leader q'
+vim.api.nvim_set_keymap('n', '<Leader>q', ':q!<CR>', { noremap = true, silent = true })
+
+-- save and exit with 'leader x'
+vim.api.nvim_set_keymap('n', '<Leader>x', ':x!<CR>', { noremap = true, silent = true })
+
+--
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -230,6 +246,76 @@ require('lazy').setup {
   --
   --  This is equivalent to:
   --    require('Comment').setup({})
+
+  {
+    'christoomey/vim-tmux-navigator',
+    config = function() end,
+  },
+
+  {
+    'github/copilot.vim',
+    config = function()
+      -- Configurações adicionais do Copilot podem ser adicionadas aqui, se necessário.
+    end,
+  },
+
+  {
+    'kyazdani42/nvim-tree.lua',
+    dependencies = 'kyazdani42/nvim-web-devicons', -- para ícones de arquivo
+    config = function()
+      local nvimtree = require 'nvim-tree'
+
+      -- recommended settings from nvim-tree documentation
+      vim.g.loaded_netrw = 1
+      vim.g.loaded_netrwPlugin = 1
+
+      -- change color for arrows in tree to light blue
+      vim.cmd [[ highlight NvimTreeFolderArrowClosed guifg=#3FC5FF ]]
+      vim.cmd [[ highlight NvimTreeFolderArrowOpen guifg=#3FC5FF ]]
+
+      -- configure nvim-tree
+      nvimtree.setup {
+        view = {
+          width = 35,
+          relativenumber = true,
+        },
+        renderer = {
+          indent_markers = {
+            enable = true,
+          },
+          icons = {
+            glyphs = {
+              folder = {
+                arrow_closed = '', -- arrow when folder is closed
+                arrow_open = '', -- arrow when folder is open
+              },
+            },
+          },
+        },
+        actions = {
+          open_file = {
+            window_picker = {
+              enable = false,
+            },
+          },
+        },
+        filters = {
+          custom = { '.DS_Store' },
+        },
+        git = {
+          ignore = false,
+        },
+      }
+
+      -- set keymaps
+      local keymap = vim.keymap -- for conciseness
+
+      keymap.set('n', '<leader>ee', '<cmd>NvimTreeToggle<CR>', { desc = 'Toggle file explorer' })
+      keymap.set('n', '<leader>ef', '<cmd>NvimTreeFindFileToggle<CR>', { desc = 'Toggle file explorer on current file' })
+      keymap.set('n', '<leader>ec', '<cmd>NvimTreeCollapse<CR>', { desc = 'Collapse file explorer' })
+      keymap.set('n', '<leader>er', '<cmd>NvimTreeRefresh<CR>', { desc = 'Refresh file explorer' })
+    end,
+  },
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
@@ -318,6 +404,8 @@ require('lazy').setup {
       -- { 'nvim-tree/nvim-web-devicons' }
     },
     config = function()
+      local actions = require 'telescope.actions'
+
       -- Telescope is a fuzzy finder that comes with a lot of different things that
       -- it can fuzzy find! It's more than just a "file finder", it can search
       -- many different aspects of Neovim, your workspace, LSP, and more!
@@ -349,13 +437,23 @@ require('lazy').setup {
         --   },
         -- },
         -- pickers = {}
+
+        defaults = {
+          path_display = { 'truncate ' },
+          mappings = {
+            i = {
+              ['<C-k>'] = actions.move_selection_previous, -- move to prev result
+              ['<C-j>'] = actions.move_selection_next, -- move to next result
+              ['<C-q>'] = actions.send_selected_to_qflist + actions.open_qflist,
+            },
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
         },
       }
-
       -- Enable telescope extensions, if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
@@ -520,6 +618,18 @@ require('lazy').setup {
       --  So, we create new capabilities with nvim cmp, and then broadcast that to the servers.
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+      local format_sync_grp = vim.api.nvim_create_augroup('GoFormat', {})
+
+      local function on_attach(client, bufnr)
+        vim.api.nvim_create_autocmd('BufWritePre', {
+          pattern = '*.go',
+          callback = function()
+            require('go.format').goimport()
+          end,
+          group = format_sync_grp,
+        })
+        -- Aqui você pode adicionar mais configurações que dependem do servidor LSP, como keymaps.
+      end
 
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -532,7 +642,58 @@ require('lazy').setup {
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
+        gopls = {
+          capabilities = capabilities,
+          on_attach = on_attach,
+          settings = {
+            gopls = {
+              analyses = {
+                assign = true,
+                atomic = true,
+                bools = true,
+                composites = true,
+                copylocks = true,
+                deepequalerrors = true,
+                embed = true,
+                errorsas = true,
+                fieldalignment = true,
+                httpresponse = true,
+                ifaceassert = true,
+                loopclosure = true,
+                lostcancel = true,
+                nilfunc = true,
+                nilness = true,
+                nonewvars = true,
+                printf = true,
+                shadow = true,
+                shift = true,
+                simplifycompositelit = true,
+                simplifyrange = true,
+                simplifyslice = true,
+                sortslice = true,
+                stdmethods = true,
+                stringintconv = true,
+                structtag = true,
+                testinggoroutine = true,
+                tests = true,
+                timeformat = true,
+                unmarshal = true,
+                unreachable = true,
+                unsafeptr = true,
+                unusedparams = true,
+                unusedresult = true,
+                unusedvariable = true,
+                unusedwrite = true,
+                useany = true,
+              },
+              staticcheck = true,
+              hoverKind = 'FullDocumentation',
+              linkTarget = 'pkg.go.dev',
+              usePlaceholders = true,
+              vulncheck = 'Imports',
+            },
+          },
+        },
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -674,9 +835,9 @@ require('lazy').setup {
         -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
           -- Select the [n]ext item
-          ['<C-n>'] = cmp.mapping.select_next_item(),
+          ['<C-j>'] = cmp.mapping.select_next_item(),
           -- Select the [p]revious item
-          ['<C-p>'] = cmp.mapping.select_prev_item(),
+          ['<C-k>'] = cmp.mapping.select_prev_item(),
 
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
