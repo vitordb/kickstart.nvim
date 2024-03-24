@@ -1,89 +1,3 @@
---[[
-
-=====================================================================
-==================== READ THIS BEFORE CONTINUING ====================
-=====================================================================
-========                                    .-----.          ========
-========         .----------------------.   | === |          ========
-========         |.-""""""""""""""""""-.|   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||   KICKSTART.NVIM   ||   |-----|          ========
-========         ||                    ||   | === |          ========
-========         ||                    ||   |-----|          ========
-========         ||:Tutor              ||   |:::::|          ========
-========         |'-..................-'|   |____o|          ========
-========         `"")----------------(""`   ___________      ========
-========        /::::::::::|  |::::::::::\  \ no mouse \     ========
-========       /:::========|  |==hjkl==:::\  \ required \    ========
-========      '""""""""""""'  '""""""""""""'  '""""""""""'   ========
-========                                                     ========
-=====================================================================
-=====================================================================
-
-What is Kickstart?
-
-  Kickstart.nvim is *not* a distribution.
-
-  Kickstart.nvim is a starting point for your own configuration.
-    The goal is that you can read every line of code, top-to-bottom, understand
-    what your configuration is doing, and modify it to suit your needs.
-
-    Once you've done that, you can start exploring, configuring and tinkering to
-    make Neovim your own! That might mean leaving kickstart just the way it is for a while
-    or immediately breaking it into modular pieces. It's up to you!
-
-    If you don't know anything about Lua, I recommend taking some time to read through
-    a guide. One possible example which will only take 10-15 minutes:
-      - https://learnxinyminutes.com/docs/lua/
-
-    After understanding a bit more about Lua, you can use `:help lua-guide` as a
-    reference for how Neovim integrates Lua.
-    - :help lua-guide
-    - (or HTML version): https://neovim.io/doc/user/lua-guide.html
-
-Kickstart Guide:
-
-  TODO: The very first thing you should do is to run the command `:Tutor` in Neovim.
-
-    If you don't know what this means, type the following:
-      - <escape key>
-      - :
-      - Tutor
-      - <enter key>
-
-    (If you already know how the Neovim basics, you can skip this step)
-
-  Once you've completed that, you can continue working through **AND READING** the rest
-  of the kickstart init.lua
-
-  Next, run AND READ `:help`.
-    This will open up a help window with some basic information
-    about reading, navigating and searching the builtin help documentation.
-
-    This should be the first place you go to look when you're stuck or confused
-    with something. It's one of my favorite neovim features.
-
-    MOST IMPORTANTLY, we provide a keymap "<space>sh" to [s]earch the [h]elp documentation,
-    which is very useful when you're not sure exactly what you're looking for.
-
-  I have left several `:help X` comments throughout the init.lua
-    These are hints about where to find more information about the relevant settings,
-    plugins or neovim features used in kickstart.
-
-   NOTE: Look for lines like this
-
-    Throughout the file. These are for you, the reader, to help understand what is happening.
-    Feel free to delete them once you know what you're doing, but they should serve as a guide
-    for when you are first encountering a few different constructs in your nvim config.
-
-If you experience any errors while trying to install kickstart, run `:checkhealth` for more info
-
-I hope you enjoy your Neovim journey,
-- TJ
-
-P.S. You can delete this when you're done too. It's your config now! :)
---]]
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -131,9 +45,7 @@ vim.opt.timeoutlen = 300
 
 -- Configure how new splits should be opened
 vim.opt.splitright = true
-vim.opt.splitbelow = true
-
--- Sets how neovim will display certain whitespace in the editor.
+vim.opt.splitbelow = true -- Sets how neovim will display certain whitespace in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
@@ -253,11 +165,172 @@ require('lazy').setup {
   },
 
   {
+    'altermo/ultimate-autopair.nvim',
+    event = { 'InsertEnter', 'CmdlineEnter' },
+    branch = 'v0.6', --recommended as each new version will have breaking changes
+    opts = {
+      --Config goes here
+    },
+  },
+
+  {
+    'harrisoncramer/gitlab.nvim',
+    dependencies = {
+      'MunifTanjim/nui.nvim',
+      'nvim-lua/plenary.nvim',
+      'sindrets/diffview.nvim',
+      'stevearc/dressing.nvim', -- Recommended but not required. Better UI for pickers.
+      'nvim-tree/nvim-web-devicons', -- Recommended but not required. Icons in discussion tree.
+    },
+    enabled = true,
+    build = function()
+      require('gitlab.server').build(true)
+    end, -- Builds the Go binary
+    config = function()
+      require('gitlab').setup {
+        port = nil, -- The port of the Go server, which runs in the background, if omitted or `nil` the port will be chosen automatically
+        log_path = vim.fn.stdpath 'cache' .. '/gitlab.nvim.log', -- Log path for the Go server
+        config_path = nil, -- Custom path for `.gitlab.nvim` file, please read the "Connecting to Gitlab" section
+        debug = { go_request = false, go_response = false }, -- Which values to log
+        attachment_dir = nil, -- The local directory for files (see the "summary" section)
+        reviewer_settings = {
+          diffview = {
+            imply_local = false, -- If true, will attempt to use --imply_local option when calling |:DiffviewOpen|
+          },
+        },
+        help = 'g?', -- Opens a help popup for local keymaps when a relevant view is focused (popup, discussion panel, etc)
+        popup = { -- The popup for comment creation, editing, and replying
+          exit = '<Esc>',
+          perform_action = '<leader>s', -- Once in normal mode, does action (like saving comment or editing description, etc)
+          perform_linewise_action = '<leader>l', -- Once in normal mode, does the linewise action (see logs for this job, etc)
+          width = '40%',
+          height = '60%',
+          border = 'rounded', -- One of "rounded", "single", "double", "solid"
+          opacity = 1.0, -- From 0.0 (fully transparent) to 1.0 (fully opaque)
+          comment = nil, -- Individual popup overrides, e.g. { width = "60%", height = "80%", border = "single", opacity = 0.85 },
+          edit = nil,
+          note = nil,
+          pipeline = nil,
+          reply = nil,
+          squash_message = nil,
+          backup_register = nil,
+        },
+        discussion_tree = { -- The discussion tree that holds all comments
+          auto_open = true, -- Automatically open when the reviewer is opened
+          switch_view = 'S', -- Toggles between the notes and discussions views
+          default_view = 'discussions', -- Show "discussions" or "notes" by default
+          blacklist = {}, -- List of usernames to remove from tree (bots, CI, etc)
+          jump_to_file = 'o', -- Jump to comment location in file
+          jump_to_reviewer = 'm', -- Jump to the location in the reviewer window
+          edit_comment = 'e', -- Edit comment
+          delete_comment = 'dd', -- Delete comment
+          reply = 'r', -- Reply to comment
+          toggle_node = 't', -- Opens or closes the discussion
+          add_emoji = 'Ed', -- Remove an emoji from a note/comment
+          toggle_all_discussions = 'T', -- Open or close separately both resolved and unresolved discussions
+          toggle_resolved_discussions = 'R', -- Open or close all resolved discussions
+          toggle_unresolved_discussions = 'U', -- Open or close all unresolved discussions
+          keep_current_open = false, -- If true, current discussion stays open even if it should otherwise be closed when toggling
+          toggle_resolved = 'p', -- Toggles the resolved status of the whole discussion
+          position = 'left', -- "top", "right", "bottom" or "left"
+          open_in_browser = 'b', -- Jump to the URL of the current note/discussion
+          size = '20%', -- Size of split
+          relative = 'editor', -- Position of tree split relative to "editor" or "window"
+          resolved = '✓', -- Symbol to show next to resolved discussions
+          unresolved = '-', -- Symbol to show next to unresolved discussions
+          tree_type = 'simple', -- Type of discussion tree - "simple" means just list of discussions, "by_file_name" means file tree with discussions under file
+          toggle_tree_type = 'i', -- Toggle type of discussion tree - "simple", or "by_file_name"
+          winbar = nil, -- Custom function to return winbar title, should return a string. Provided with WinbarTable (defined in annotations.lua)
+          -- If using lualine, please add "gitlab" to disabled file types, otherwise you will not see the winbar.
+        },
+        info = { -- Show additional fields in the summary view
+          enabled = true,
+          horizontal = false, -- Display metadata to the left of the summary rather than underneath
+          fields = { -- The fields listed here will be displayed, in whatever order you choose
+            'author',
+            'created_at',
+            'updated_at',
+            'merge_status',
+            'draft',
+            'conflicts',
+            'assignees',
+            'reviewers',
+            'branch',
+            'pipeline',
+          },
+        },
+        discussion_signs = {
+          enabled = true, -- Show diagnostics for gitlab comments in the reviewer
+          skip_resolved_discussion = false, -- Show diagnostics for resolved discussions
+          severity = vim.diagnostic.severity.INFO, -- ERROR, WARN, INFO, or HINT
+          virtual_text = false, -- Whether to show the comment text inline as floating virtual text
+          priority = 100, -- Higher will override LSP warnings, etc
+          icons = {
+            comment = '→|',
+            range = ' |',
+          },
+        },
+        pipeline = {
+          created = '',
+          pending = '',
+          preparing = '',
+          scheduled = '',
+          running = '',
+          canceled = '↪',
+          skipped = '↪',
+          success = '✓',
+          failed = '',
+        },
+        merge = { -- The default behaviors when merging an MR, see "Merging an MR"
+          squash = false,
+          delete_branch = false,
+        },
+        create_mr = {
+          target = nil, -- Default branch to target when creating an MR
+          template_file = nil, -- Default MR template in .gitlab/merge_request_templates
+          title_input = { -- Default settings for MR title input window
+            width = 40,
+            border = 'rounded',
+          },
+        },
+        colors = {
+          discussion_tree = {
+            username = 'Keyword',
+            date = 'Comment',
+            chevron = 'DiffviewNonText',
+            directory = 'Directory',
+            directory_icon = 'DiffviewFolderSign',
+            file_name = 'Normal',
+          },
+        },
+      }
+    end,
+  },
+
+  {
     'github/copilot.vim',
     config = function()
-      vim.cmd 'Copilot enable'
+      vim.g.copilot_enabled = false
 
-      -- Configurações adicionais do Copilot podem ser adicionadas aqui, se necessário.
+      vim.api.nvim_create_user_command('ToggleCopilot', function()
+        if vim.g.copilot_enabled then
+          vim.cmd 'Copilot disable'
+          vim.g.copilot_enabled = false
+          print 'Copilot desativado'
+        else
+          vim.cmd 'Copilot enable'
+          vim.g.copilot_enabled = true
+          print 'Copilot ativado'
+        end
+      end, {})
+    end,
+  },
+
+  {
+    'jose-elias-alvarez/nvim-lsp-ts-utils',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' }, -- Garante que as dependências estejam instaladas
+    config = function()
+      -- A configuração específica do plugin será feita no setup do tsserver abaixo
     end,
   },
 
@@ -275,6 +348,29 @@ require('lazy').setup {
     ft = { 'go', 'gomod' },
     build = ':lua require("go.install").update_all_sync()', -- if you need to install/update all binaries
   },
+
+  {
+    'mfussenegger/nvim-dap',
+    config = function()
+      -- Configurações opcionais do nvim-dap podem ser adicionadas aqui
+    end,
+  },
+
+  {
+    'rcarriga/nvim-dap-ui',
+    dependencies = { 'mfussenegger/nvim-dap' },
+    config = function()
+      require('dapui').setup()
+      -- Configurações adicionais do dap-ui podem ser colocadas aqui
+    end,
+  },
+
+  {
+    'theHamsta/nvim-dap-virtual-text',
+    config = function() end,
+  },
+
+  { 'folke/neodev.nvim', opts = {} },
 
   {
     'kyazdani42/nvim-tree.lua',
@@ -308,6 +404,12 @@ require('lazy').setup {
               },
             },
           },
+        },
+        update_cwd = true,
+        update_focused_file = {
+          enable = true,
+          update_cwd = true,
+          ignore_list = {},
         },
         actions = {
           open_file = {
@@ -385,6 +487,15 @@ require('lazy').setup {
         ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
       }
     end,
+  },
+
+  {
+    'folke/zen-mode.nvim',
+    opts = {
+      -- your configuration comes here
+      -- or leave it empty to use the default settings
+      -- refer to the configuration section below
+    },
   },
 
   -- NOTE: Plugins can specify dependencies.
@@ -658,6 +769,31 @@ require('lazy').setup {
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
+
+        tsserver = {
+          on_attach = function(client, bufnr)
+            -- Especificamente para o tsserver, você ativa as utilidades do ts_utils
+            if client.name == 'tsserver' then
+              local ts_utils = require 'nvim-lsp-ts-utils'
+              ts_utils.setup {
+                debug = false,
+                disable_commands = false,
+                enable_import_on_completion = true,
+                -- mais configurações...
+              }
+
+              ts_utils.setup_client(client)
+
+              local bufopts = { silent = true, buffer = bufnr }
+              vim.keymap.set('n', 'gs', ':TSLspOrganize<CR>', bufopts)
+              vim.keymap.set('n', 'gi', ':TSLspRenameFile<CR>', bufopts)
+              vim.keymap.set('n', 'go', ':TSLspImportAll<CR>', bufopts)
+            end
+            -- Outras configurações on_attach que se aplicam a todos os LSPs
+          end,
+          filetypes = { 'typescript', 'typescriptreact', 'typescript.tsx', 'javascript', 'javascriptreact', 'javascript.jsx' },
+          capabilities = capabilities,
+        },
         -- clangd = {},
         gopls = {
           capabilities = capabilities,
@@ -851,20 +987,24 @@ require('lazy').setup {
         --
         -- No, but seriously. Please read `:help ins-completion`, it is really good!
         mapping = cmp.mapping.preset.insert {
+
           -- Select the [n]ext item
           ['<C-j>'] = cmp.mapping.select_next_item(),
           -- Select the [p]revious item
           ['<C-k>'] = cmp.mapping.select_prev_item(),
+          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-Space>'] = cmp.mapping.complete(), -- show completion suggestions
+          ['<C-e>'] = cmp.mapping.abort(), -- close completion window
+          ['<CR>'] = cmp.mapping.confirm { select = false },
 
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
           --  completions whenever it has completion options available.
-          ['<C-Space>'] = cmp.mapping.complete {},
 
           -- Think of <c-l> as moving to the right of your snippet expansion.
           --  So if you have a snippet that's like:
@@ -889,6 +1029,7 @@ require('lazy').setup {
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'path' },
+          { name = 'buffer' }, -- text within current buffer
         },
       }
     end,
@@ -899,12 +1040,12 @@ require('lazy').setup {
     -- change the command in the config to whatever the name of that colorscheme is
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`
-    'folke/tokyonight.nvim',
+    'catppuccin/nvim',
     lazy = false, -- make sure we load this during startup if it is your main colorscheme
     priority = 1000, -- make sure to load this before all the other start plugins
     config = function()
       -- Load the colorscheme here
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'catppuccin'
 
       -- You can configure highlights by doing something like
       vim.cmd.hi 'Comment gui=none'
