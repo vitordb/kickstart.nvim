@@ -192,6 +192,18 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Mover linha para cima no modo normal
+vim.keymap.set('n', '<leader>k', ':move-2<CR>==', { noremap = true, silent = true })
+
+-- Mover linha para baixo no modo normal
+vim.keymap.set('n', '<leader>j', ':move+<CR>==', { noremap = true, silent = true })
+
+-- Mover seleção visual para cima
+vim.keymap.set('v', '<leader>k', ":move '<-2<CR>gv=gv", { noremap = true, silent = true })
+
+-- Mover seleção visual para baixo
+vim.keymap.set('v', '<leader>j', ":move '>+1<CR>gv=gv", { noremap = true, silent = true })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -811,7 +823,6 @@ require('lazy').setup({
           ['<CR>'] = cmp.mapping.confirm { select = true }, -- Usar Enter para confirmar seleção
           ['<C-b>'] = cmp.mapping.scroll_docs(-4),
           ['<C-f>'] = cmp.mapping.scroll_docs(4),
-
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
           --['<CR>'] = cmp.mapping.confirm { select = true },
