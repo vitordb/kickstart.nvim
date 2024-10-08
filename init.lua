@@ -623,67 +623,67 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-      local servers = {
-        -- clangd = {},
-        -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
+      local servers =
+        {
+          -- clangd = {},
+          -- gopls = {},
+          -- pyright = {},
+          -- rust_analyzer = {},
+          -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
+          --
+          -- Some languages (like typescript) have entire language plugins that can be useful:
+          --    https://github.com/pmizio/typescript-tools.nvim
+          --
+          -- But for many setups, the LSP (`ts_ls`) will work just fine
+          -- ts_ls = {},
+          --
 
-        lua_ls = {
-          -- cmd = {...},
-          -- filetypes = { ...},
-          -- capabilities = {},
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = 'Replace',
+          lua_ls = {
+            -- cmd = {...},
+            -- filetypes = { ...},
+            -- capabilities = {},
+            settings = {
+              Lua = {
+                completion = {
+                  callSnippet = 'Replace',
+                },
+                -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
+                -- diagnostics = { disable = { 'missing-fields' } },
               },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
-            },
-          },
-        },
-
-        gopls = {
-          -- Comando para iniciar o gopls
-          cmd = { 'gopls' },
-
-          -- Arquivos que o gopls deve processar
-          filetypes = { 'go', 'gomod' },
-
-          -- Definindo as capacidades do LSP (com suporte a snippets, por exemplo)
-          capabilities = capabilities,
-
-          -- Configurações específicas do gopls
-          settings = {
-            gopls = {
-              analyses = {
-                unusedparams = true, -- Analisar parâmetros não utilizados
-              },
-              staticcheck = true, -- Habilitar verificações estáticas
             },
           },
 
-          -- Configurações de root directory
-          root_dir = require('lspconfig/util').root_pattern('go.work', 'go.mod', '.git'),
-        },
-      }
+          gopls = {
+            -- Comando para iniciar o gopls
+            cmd = { 'gopls' },
 
-      -- Ensure the servers and tools above are installed
-      --  To check the current status of installed tools and/or manually install
-      --  other tools, you can run
-      --    :Mason
-      --
-      --  You can press `g?` for help in this menu.
-      require('mason').setup()
+            -- Arquivos que o gopls deve processar
+            filetypes = { 'go', 'gomod' },
+
+            -- Definindo as capacidades do LSP (com suporte a snippets, por exemplo)
+            capabilities = capabilities,
+
+            -- Configurações específicas do gopls
+            settings = {
+              gopls = {
+                analyses = {
+                  unusedparams = true, -- Analisar parâmetros não utilizados
+                },
+                staticcheck = true, -- Habilitar verificações estáticas
+              },
+            },
+
+            -- Configurações de root directory
+            root_dir = require('lspconfig/util').root_pattern('go.work', 'go.mod', '.git'),
+          },
+        },
+        -- Ensure the servers and tools above are installed
+        --  To check the current status of installed tools and/or manually install
+        --  other tools, you can run
+        --    :Mason
+        --
+        --  You can press `g?` for help in this menu.
+        require('mason').setup()
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
@@ -872,69 +872,69 @@ require('lazy').setup({
     end,
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
-    init = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      local transparent = false -- set to true if you would like to enable transparency
-
-      local bg = '#011628'
-      local bg_dark = '#011423'
-      local bg_highlight = '#143652'
-      local bg_search = '#0A64AC'
-      local bg_visual = '#275378'
-      local fg = '#CBE0F0'
-      local fg_dark = '#B4D0E9'
-      local fg_gutter = '#627E97'
-      local border = '#547998'
-
-      require('tokyonight').setup {
-        style = 'night',
-        transparent = transparent,
-        styles = {
-          sidebars = transparent and 'transparent' or 'dark',
-          floats = transparent and 'transparent' or 'dark',
-        },
-        on_colors = function(colors)
-          colors.bg = bg
-          colors.bg_dark = transparent and colors.none or bg_dark
-          colors.bg_float = transparent and colors.none or bg_dark
-          colors.bg_highlight = bg_highlight
-          colors.bg_popup = bg_dark
-          colors.bg_search = bg_search
-          colors.bg_sidebar = transparent and colors.none or bg_dark
-          colors.bg_statusline = transparent and colors.none or bg_dark
-          colors.bg_visual = bg_visual
-          colors.border = border
-          colors.fg = fg
-          colors.fg_dark = fg_dark
-          colors.fg_float = fg
-          colors.fg_gutter = fg_gutter
-          colors.fg_sidebar = fg_dark
-        end,
-      }
-
-      vim.cmd 'colorscheme tokyonight'
-    end,
-  },
-
-  -- {
-  --   'catppuccin/nvim',
-  --   name = 'catppuccin',
-  --   priority = 1000,
+  -- { -- You can easily change to a different colorscheme.
+  --   -- Change the name of the colorscheme plugin below, and then
+  --   -- change the command in the config to whatever the name of that colorscheme is.
+  --   --
+  --   -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
+  --   'folke/tokyonight.nvim',
+  --   priority = 1000, -- Make sure to load this before all the other start plugins.
   --   init = function()
-  --     vim.cmd.colorscheme 'catppuccin'
+  --     -- Load the colorscheme here.
+  --     -- Like many other themes, this one has different styles, and you could load
+  --     -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+  --     local transparent = false -- set to true if you would like to enable transparency
   --
-  --     vim.cmd.hi 'Comment gui=none'
+  --     local bg = '#011628'
+  --     local bg_dark = '#011423'
+  --     local bg_highlight = '#143652'
+  --     local bg_search = '#0A64AC'
+  --     local bg_visual = '#275378'
+  --     local fg = '#CBE0F0'
+  --     local fg_dark = '#B4D0E9'
+  --     local fg_gutter = '#627E97'
+  --     local border = '#547998'
+  --
+  --     require('tokyonight').setup {
+  --       style = 'night',
+  --       transparent = transparent,
+  --       styles = {
+  --         sidebars = transparent and 'transparent' or 'dark',
+  --         floats = transparent and 'transparent' or 'dark',
+  --       },
+  --       on_colors = function(colors)
+  --         colors.bg = bg
+  --         colors.bg_dark = transparent and colors.none or bg_dark
+  --         colors.bg_float = transparent and colors.none or bg_dark
+  --         colors.bg_highlight = bg_highlight
+  --         colors.bg_popup = bg_dark
+  --         colors.bg_search = bg_search
+  --         colors.bg_sidebar = transparent and colors.none or bg_dark
+  --         colors.bg_statusline = transparent and colors.none or bg_dark
+  --         colors.bg_visual = bg_visual
+  --         colors.border = border
+  --         colors.fg = fg
+  --         colors.fg_dark = fg_dark
+  --         colors.fg_float = fg
+  --         colors.fg_gutter = fg_gutter
+  --         colors.fg_sidebar = fg_dark
+  --       end,
+  --     }
+  --
+  --     vim.cmd 'colorscheme tokyonight'
   --   end,
   -- },
+
+  {
+    'catppuccin/nvim',
+    name = 'catppuccin',
+    priority = 1000,
+    init = function()
+      vim.cmd.colorscheme 'catppuccin'
+
+      vim.cmd.hi 'Comment gui=none'
+    end,
+  },
 
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
